@@ -1,0 +1,295 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>RevealJS : c:\Code\azure-dev-ops-day-raleigh-2019\slides.md</title>
+        <link rel="stylesheet" href="css/reveal.css">
+        <link rel="stylesheet" href="css/theme/league.css" id="theme">
+        
+       
+        <!-- For syntax highlighting -->
+        <link rel="stylesheet" href="lib/css/darkula.css">
+
+        
+
+        <!-- If the query includes 'print-pdf', use the PDF print sheet -->
+        <script>
+          document.write( '<link rel="stylesheet" href="css/print/' + ( window.location.search.match( /print-pdf/gi ) ? 'pdf' : 'paper' ) + '.css" type="text/css" media="print">' );
+        </script>
+
+        <style type="text/css">
+            @page {    
+              margin: 0;
+              size: auto; 
+            }
+        </style>
+
+        <script>
+         if(window.location.search.match( /print-pdf-now/gi )) {
+           window.print();
+         }
+      </script>
+
+    </head>
+    <body>
+
+        <div class="reveal">
+            <div class="slides"><section  data-markdown><script type="text/template">
+# Docker Builds
+
+## Jan 26
+
+A Sane Build / Test / Release pipeline - attempt 3572
+</script></section><section  data-markdown><script type="text/template">
+
+## Agenda
+
+* Ideas / Outcomes
+* Each revision
+* Distinct outcomes
+* Recommendation
+</script></section><section  data-markdown><script type="text/template">
+
+## Context
+
+node.js / python apps
+
+<aside class="notes"><p>C# tests have more nuances worth a different talk</p>
+</aside></script></section><section  data-markdown><script type="text/template">
+
+## Publishing Dockerfile
+
+* Build external to the Dockerfile
+* Copy files into Dockerfile only
+</script></section><section  data-markdown><script type="text/template">
+
+### Example Build
+
+```bash
+pip install -r requirements.txt --target lib
+docker build -t myapp -f 01.Publishing.Dockerfile .
+```
+</script></section><section  data-markdown><script type="text/template">
+
+### Example Dockerfile
+
+```Dockerfile
+FROM python:3.6
+WORKDIR /app
+ENV PYTHONPATH /app/lib
+COPY app.py ./
+COPY lib .
+ENTRYPOINT ["python", "app.py"]
+```
+</script></section><section  data-markdown><script type="text/template">
+
+### Observations
+
+* Implicit build agent dependencies
+  * Same OS?
+  * python version?
+  * If not, when does it error?
+  * Same behavior in heterogenous build pool?
+* No tests
+</script></section><section  data-markdown><script type="text/template">
+
+## Build / Publishing Dockerfile
+
+* Build/resolve packages inside Dockerfile
+* Ahead of Time vs Just in Time
+</script></section><section  data-markdown><script type="text/template">
+
+### Example Build
+
+```bash
+docker build -t myapp -f 02.Build-Publishing.Dockerfile .
+```
+</script></section><section  data-markdown><script type="text/template">
+
+### Example Dockerfile
+
+```Dockerfile
+FROM python:3.6
+WORKDIR /app
+COPY app.py ./
+COPY requirements.txt ./
+RUN pip install -r requirements.txt
+ENTRYPOINT ["python", "app.py"]
+```
+</script></section><section  data-markdown><script type="text/template">
+
+## Build docker compose, Publishing Dockerfile
+
+* TODO - collapse this demo into the next one for build/test compose + publish dockerfile
+* Volume mount points
+</script></section><section  data-markdown><script type="text/template">
+
+### Example Build
+
+```bash
+docker-compose -f 03.docker-compose.yaml up
+docker-compose -f 03.docker-compose.yaml down
+# double check this - might be simpler syntax
+```
+</script></section><section  data-markdown><script type="text/template">
+
+### Example docker-compose
+
+```docker-compose
+... TODO
+```
+</script></section><section  data-markdown><script type="text/template">
+
+### Example Build Dockerfile
+
+```Dockerfile
+FROM python:3.6
+WORKDIR /app
+COPY app.py ./
+COPY requirements.txt ./
+RUN pip install -r requirements.txt --target lib
+ENTRYPOINT ["pip", "install", "-r", "requirements.txt" ,"--target", "lib"]
+```
+</script></section><section  data-markdown><script type="text/template">
+
+## Build / test docker compose, Publishing Dockerfile
+
+* Requires volume mount points
+* Tests!
+* Access to test artifacts
+* File permissions require work
+</script></section><section  data-markdown><script type="text/template">
+
+## Build / Publishing Dockerfile, docker run tests
+
+* Requires volume mount points
+* Tests!
+* Access to test artifacts
+* File permissions require work
+</script></section><section  data-markdown><script type="text/template">
+
+## Build / Publishing / test multi-stage Dockerfile
+
+* Intermediate layer caching
+* Sensitive args not in final dockerfile
+* How to get test artifacts?! Argh!
+* No more volume mount points
+</script></section><section  data-markdown><script type="text/template">
+
+## Build / Publishing Dockerfile + test Dockerfile
+
+* Simpler build
+* Simpler test wrapper
+* No volume mount points required
+* Remote builds possible
+* Found a nice trick to get test artifacts
+</script></section><section  data-markdown><script type="text/template">
+
+## Learning TTY
+
+```bash
+docker run -it ...
+
+# vs
+
+docker run -i ...
+```
+
+<aside class="notes"><p>this is when I ran into the difference between -i and -it. Basically, if you don&#39;t need the interactive terminal (like when running bash interactively), then leave off the t flag. Leaving it on can cause</p>
+</aside></script></section><section  data-markdown><script type="text/template">
+
+## Recommendation
+
+* Single responsibility
+* Simple as possible
+* Command Chain
+</script></section><section  data-markdown><script type="text/template">
+
+## Related / References
+
+* https://docs.microsoft.com/en-us/azure/container-registry/container-registry-tutorial-quick-task
+
+</script></section></div>
+        </div>
+
+        <script src="lib/js/head.min.js"></script>
+        <script src="js/reveal.js"></script>
+
+        <script>
+            function extend() {
+              var target = {};
+              for (var i = 0; i < arguments.length; i++) {
+                var source = arguments[i];
+                for (var key in source) {
+                  if (source.hasOwnProperty(key)) {
+                    target[key] = source[key];
+                  }
+                }
+              }
+              return target;
+            }
+            // Optional libraries used to extend on reveal.js
+            var deps = [
+              { src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+              { src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector('[data-markdown]'); } },
+              { src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector('[data-markdown]'); } },
+              { src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+              { src: 'plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } },
+              { src: 'plugin/math/math.js', async: true }
+            ];
+            // default options to init reveal.js
+            var defaultOptions = {
+              controls: true,
+              progress: true,
+              history: true,
+              center: true,
+              transition: 'default',
+              dependencies: deps
+            };
+            // options from URL query string
+            var queryOptions = Reveal.getQueryHash() || {};
+            var options = {
+  "notesSeparator": "note:",
+  "separator": "^[\r\n?|\n]---[\r\n?|\n]$",
+  "verticalSeparator": "^[\r\n?|\n]--[\r\n?|\n]$",
+  "theme": "league",
+  "highlightTheme": "darkula",
+  "controls": true,
+  "progress": true,
+  "slideNumber": false,
+  "history": true,
+  "keyboard": true,
+  "overview": true,
+  "center": true,
+  "touch": true,
+  "loop": false,
+  "rtl": false,
+  "shuffle": false,
+  "fragments": true,
+  "embedded": false,
+  "help": true,
+  "showNotes": false,
+  "autoSlide": 0,
+  "autoSlideStoppable": true,
+  "mouseWheel": false,
+  "hideAddressBar": true,
+  "previewLinks": false,
+  "transition": "fade",
+  "transitionSpeed": "default",
+  "backgroundTransition": "default",
+  "viewDistance": 3,
+  "parallaxBackgroundImage": "",
+  "parallaxBackgroundSize": "",
+  "parallaxBackgroundHorizontal": null,
+  "parallaxBackgroundVertical": null,
+  "slideExplorerEnabled": true,
+  "browserPath": null,
+  "attributes": ""
+};
+            options = extend(defaultOptions, options, queryOptions);
+            Reveal.initialize(options);
+
+        </script>
+        
+    </body>
+</html>
