@@ -42,6 +42,15 @@
 A Sane Build / Test / Release pipeline - attempt 3572
 </script></section><section  data-markdown><script type="text/template">
 
+## Presenter
+
+* John Goodwin
+* john@jjgoodwin.com
+* http://johngoodwin.com/
+
+Principle Software Engineer, Metabolon, Inc
+</script></section><section  data-markdown><script type="text/template">
+
 ## Agenda
 
 * Ideas / Outcomes
@@ -55,21 +64,21 @@ A Sane Build / Test / Release pipeline - attempt 3572
 node.js / python apps
 
 <aside class="notes"><p>C# tests have more nuances worth a different talk</p>
-</aside></script></section><section  data-markdown><script type="text/template">
+</aside></script></section><section ><section data-markdown><script type="text/template">
 
-## Publishing Dockerfile
+## 01 - Publish Dockerfile
 
 * Build external to the Dockerfile
 * Copy files into Dockerfile only
-</script></section><section  data-markdown><script type="text/template">
+</script></section><section data-markdown><script type="text/template">
 
 ### Example Build
 
 ```bash
 pip install -r requirements.txt --target lib
-docker build -t myapp -f 01.Publishing.Dockerfile .
+docker build -t myapp -f 01.Publish.Dockerfile .
 ```
-</script></section><section  data-markdown><script type="text/template">
+</script></section><section data-markdown><script type="text/template">
 
 ### Example Dockerfile
 
@@ -77,11 +86,11 @@ docker build -t myapp -f 01.Publishing.Dockerfile .
 FROM python:3.6
 WORKDIR /app
 ENV PYTHONPATH /app/lib
-COPY app.py ./
-COPY lib .
+COPY site site
+COPY lib lib
 ENTRYPOINT ["python", "app.py"]
 ```
-</script></section><section  data-markdown><script type="text/template">
+</script></section><section data-markdown><script type="text/template">
 
 ### Observations
 
@@ -91,101 +100,206 @@ ENTRYPOINT ["python", "app.py"]
   * If not, when does it error?
   * Same behavior in heterogenous build pool?
 * No tests
-</script></section><section  data-markdown><script type="text/template">
+</script></section></section><section ><section data-markdown><script type="text/template">
 
-## Build / Publishing Dockerfile
+## 02 - Build / Publish Dockerfile
 
 * Build/resolve packages inside Dockerfile
 * Ahead of Time vs Just in Time
-</script></section><section  data-markdown><script type="text/template">
+</script></section><section data-markdown><script type="text/template">
 
 ### Example Build
 
 ```bash
-docker build -t myapp -f 02.Build-Publishing.Dockerfile .
+docker build -t myapp -f 02.Build-Publish.Dockerfile .
 ```
-</script></section><section  data-markdown><script type="text/template">
+</script></section><section data-markdown><script type="text/template">
 
 ### Example Dockerfile
 
 ```Dockerfile
 FROM python:3.6
 WORKDIR /app
-COPY app.py ./
+COPY site site
 COPY requirements.txt ./
 RUN pip install -r requirements.txt
 ENTRYPOINT ["python", "app.py"]
 ```
-</script></section><section  data-markdown><script type="text/template">
+</script></section><section data-markdown><script type="text/template">
 
-## Build docker compose, Publishing Dockerfile
+### Observations
 
-* TODO - collapse this demo into the next one for build/test compose + publish dockerfile
-* Volume mount points
-</script></section><section  data-markdown><script type="text/template">
+* Build environment now controlled
+* Container might have extras for building
+* No tests
+</script></section></section><section ><section data-markdown><script type="text/template">
 
-### Example Build
+## 03 - Build / Publish Dockerfile, docker run tests
+
+* Tests!
+* Access to test artifacts
+</script></section><section data-markdown><script type="text/template">
+
+### Example Test Command
 
 ```bash
-docker-compose -f 03.docker-compose.yaml up
-docker-compose -f 03.docker-compose.yaml down
-# double check this - might be simpler syntax
+mkdir -p testresults
+docker run --rm -i \
+    --entrypoint sh \
+    -e PYTHONPATH="/app/site" \
+	-v $(pwd)/test.requirements.txt:/app/test.requirements.txt \
+	-v $(pwd)/testresults:/app/testresults \
+    -v $(pwd)/tests:/app/tests \
+	myapp -c "pip install -r test.requirements.txt && pytest --junitxml testresults/test-results.xml --cov site --cov-report=xml:testresults/coverage.xml --cov-report=html:testresults/coverage-report -v tests"
 ```
-</script></section><section  data-markdown><script type="text/template">
+</script></section><section data-markdown><script type="text/template">
 
-### Example docker-compose
+### Observations
 
-```docker-compose
-... TODO
-```
-</script></section><section  data-markdown><script type="text/template">
-
-### Example Build Dockerfile
-
-```Dockerfile
-FROM python:3.6
-WORKDIR /app
-COPY app.py ./
-COPY requirements.txt ./
-RUN pip install -r requirements.txt --target lib
-ENTRYPOINT ["pip", "install", "-r", "requirements.txt" ,"--target", "lib"]
-```
-</script></section><section  data-markdown><script type="text/template">
-
-## Build / test docker compose, Publishing Dockerfile
-
-* Requires volume mount points
 * Tests!
-* Access to test artifacts
-* File permissions require work
-</script></section><section  data-markdown><script type="text/template">
+* Test modules separate from publish container
+* Need volume mounts - ugh
+* pycache behavior finnicky
+* File permissions can get messed up
+</script></section></section><section  data-markdown><script type="text/template">
 
-## Build / Publishing Dockerfile, docker run tests
+## 04 - Build / Publish Dockerfile, Test docker-compose
 
-* Requires volume mount points
-* Tests!
-* Access to test artifacts
-* File permissions require work
-</script></section><section  data-markdown><script type="text/template">
+* Removed for brevity
+* Similar to prior, but uses compose syntax
+</script></section><section ><section data-markdown><script type="text/template">
 
-## Build / Publishing / test multi-stage Dockerfile
+## 05 - Build / Publish / test multi-stage Dockerfile
 
 * Intermediate layer caching
 * Sensitive args not in final dockerfile
-* How to get test artifacts?! Argh!
 * No more volume mount points
-</script></section><section  data-markdown><script type="text/template">
+* Build cache easier to remove from publish
+</script></section><section data-markdown><script type="text/template">
 
-## Build / Publishing Dockerfile + test Dockerfile
+### Example Dockerfile - Part 1
+
+```Dockerfile
+FROM python:3.6 as build
+WORKDIR /app
+COPY requirements.txt ./
+RUN pip install -r requirements.txt --target lib
+
+FROM python:3.6 as appbase
+WORKDIR /app
+COPY site site
+COPY requirements.txt ./
+COPY --from=build /app/lib /app/lib
+ENTRYPOINT ["python", "site/app.py"]
+```
+</script></section><section data-markdown><script type="text/template">
+
+### Example Dockerfile - Part 2
+
+```Dockerfile
+FROM appbase as test
+ENV PYTHONPATH "/app/site:/app/lib"
+COPY test.requirements.txt ./
+COPY tests tests
+COPY *.sh ./
+RUN pip install -r test.requirements.txt
+RUN mkdir /app/testresults
+RUN chmod +x *.sh
+RUN run_tests.sh
+```
+</script></section><section data-markdown><script type="text/template">
+
+### Example Dockerfile - Part 3
+
+```Dockerfile
+FROM appbase as app
+ENV PYTHONPATH "/app/site:/app/lib"
+COPY --from=test /app/testresults /app/testresults
+```
+</script></section><section data-markdown><script type="text/template">
+
+### Observations
+
+* How to get test artifacts?! Argh!
+* Docker file is much more complex
+</script></section></section><section ><section data-markdown><script type="text/template">
+
+## 06 - Build / Publish Dockerfile + test Dockerfile
 
 * Simpler build
 * Simpler test wrapper
 * No volume mount points required
 * Remote builds possible
 * Found a nice trick to get test artifacts
-</script></section><section  data-markdown><script type="text/template">
+</script></section><section data-markdown><script type="text/template">
 
-## Learning TTY
+### Example Build/Publish Dockerfile
+
+```Dockerfile
+FROM python:3.6 as build
+WORKDIR /app
+COPY requirements.txt ./
+RUN pip install -r requirements.txt --target lib
+
+FROM python:3.6 as appbase
+WORKDIR /app
+ENV PYTHONPATH "/app/site:/app/lib"
+COPY site site
+COPY requirements.txt ./
+COPY --from=build /app/lib /app/lib
+ENTRYPOINT ["python", "site/app.py"]
+
+FROM appbase as app
+```
+</script></section><section data-markdown><script type="text/template">
+
+### Example Test Dockerfile
+
+```Dockerfile
+ARG IMGBASE
+FROM ${IMGBASE}
+ENV PYTHONPATH "/app/site:/app/lib"
+COPY test.requirements.txt ./
+COPY tests tests
+COPY *.sh ./
+RUN chmod +x *.sh
+RUN pip install -r test.requirements.txt
+
+ENTRYPOINT ["/app/run_tests_docker.sh"]
+```
+</script></section><section data-markdown><script type="text/template">
+
+### run_tests_docker.sh
+
+```bash
+#!/usr/bin/env bash
+# folder for the test results
+TESTRESULTS="testresults"
+mkdir -p $TESTRESULTS
+./run_tests.sh > $TESTRESULTS/stdout.log 2> $TESTRESULTS/stderr.log
+
+EXIT_CODE=$?
+
+tar cf - "$TESTRESULTS" | cat
+exit $EXIT_CODE
+```
+</script></section><section data-markdown><script type="text/template">
+
+### run_tests_ci.sh
+
+```bash
+#!/usr/bin/env bash
+: "${TEST_IMAGE_NAME:?Name of test image to run}"
+
+docker run --rm -i \
+    $TEST_IMAGE_NAME \
+    | tar -xf - && EXIT_CODE=${PIPESTATUS[0]} && cat testresults/stdout.log && cat testresults/stderr.log 1>&2
+
+exit $EXIT_CODE
+```
+</script></section><section data-markdown><script type="text/template">
+
+### Learning TTY
 
 ```bash
 docker run -it ...
@@ -195,8 +309,8 @@ docker run -it ...
 docker run -i ...
 ```
 
-<aside class="notes"><p>this is when I ran into the difference between -i and -it. Basically, if you don&#39;t need the interactive terminal (like when running bash interactively), then leave off the t flag. Leaving it on can cause</p>
-</aside></script></section><section  data-markdown><script type="text/template">
+<aside class="notes"><p>this is when I ran into the difference between -i and -it. Basically, if you don&#39;t need the interactive terminal (like when running bash interactively), then leave off the t flag. Leaving it on can cause extra carriage return characters in your datastream. This will corrupt the output from tar</p>
+</aside></script></section></section><section  data-markdown><script type="text/template">
 
 ## Recommendation
 
@@ -207,8 +321,8 @@ docker run -i ...
 
 ## Related / References
 
+* https://github.com/jhgoodwin/azure-dev-ops-day-raleigh-2019
 * https://docs.microsoft.com/en-us/azure/container-registry/container-registry-tutorial-quick-task
-
 </script></section></div>
         </div>
 
@@ -235,7 +349,8 @@ docker run -i ...
               { src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector('[data-markdown]'); } },
               { src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
               { src: 'plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } },
-              { src: 'plugin/math/math.js', async: true }
+              { src: 'plugin/math/math.js', async: true },
+              { src: 'plugin/zoom-js/zoom.js', async: true }
             ];
             // default options to init reveal.js
             var defaultOptions = {

@@ -1,2 +1,0 @@
-# ref 03.Build.Dockerfile to build
-# use volume mount points to make sure it drops the lib folder in the current folder
