@@ -18,7 +18,7 @@ COPY *.sh ./
 RUN pip install -r test.requirements.txt
 RUN mkdir /app/testresults
 RUN chmod +x *.sh
-RUN run_tests.sh
+RUN ./run_tests.sh
 
 FROM appbase as app
 ENV PYTHONPATH "/app/site:/app/lib"
