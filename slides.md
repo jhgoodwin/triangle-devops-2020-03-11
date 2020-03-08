@@ -1,13 +1,15 @@
 ---
-theme : "league"
+theme : "default"
+class : "invert"
 transition: "fade"
 highlightTheme: "darkula"
 showNotes: false
+marp: true
 ---
 
 # Docker Builds
 
-## Jan 26
+## March 11, 2020
 
 A Sane Build / Test / Release pipeline - attempt 3572
 
@@ -17,9 +19,10 @@ A Sane Build / Test / Release pipeline - attempt 3572
 
 * John Goodwin
 * john@jjgoodwin.com
-* http://johngoodwin.com/
+* <http://johngoodwin.com/>
 
-Principle Software Engineer, Metabolon, Inc
+Principal Software Engineer, Metabolon, Inc
+<https://metabolon.com/>
 
 ---
 
@@ -45,18 +48,18 @@ Note: C# tests have more nuances worth a different talk
 * Build external to the Dockerfile
 * Copy files into Dockerfile only
 
---
+---
 
-### Example Build
+### 01 - Example Build
 
 ```bash
 pip install -r requirements.txt --target lib
 docker build -t myapp -f 01.Publish.Dockerfile .
 ```
 
---
+---
 
-### Example Dockerfile
+### 01 - Example Dockerfile
 
 ```Dockerfile
 FROM python:3.6
@@ -67,9 +70,9 @@ COPY lib lib
 ENTRYPOINT ["python", "app.py"]
 ```
 
---
+---
 
-### Observations
+### 01 - Observations
 
 * Implicit build agent dependencies
   * Same OS?
@@ -85,17 +88,17 @@ ENTRYPOINT ["python", "app.py"]
 * Build/resolve packages inside Dockerfile
 * Ahead of Time vs Just in Time
 
---
+---
 
-### Example Build
+### 02 - Example Build
 
 ```bash
 docker build -t myapp -f 02.Build-Publish.Dockerfile .
 ```
 
---
+---
 
-### Example Dockerfile
+### 02 - Example Dockerfile
 
 ```Dockerfile
 FROM python:3.6
@@ -106,9 +109,9 @@ RUN pip install -r requirements.txt
 ENTRYPOINT ["python", "app.py"]
 ```
 
---
+---
 
-### Observations
+### 02 - Observations
 
 * Build environment now controlled
 * Container might have extras for building
@@ -121,24 +124,29 @@ ENTRYPOINT ["python", "app.py"]
 * Tests!
 * Access to test artifacts
 
---
+---
 
-### Example Test Command
+### 03 - Example Test Command
 
 ```bash
 mkdir -p testresults
 docker run --rm -i \
     --entrypoint sh \
     -e PYTHONPATH="/app/site" \
-	-v $(pwd)/test.requirements.txt:/app/test.requirements.txt \
-	-v $(pwd)/testresults:/app/testresults \
+    -v $(pwd)/test.requirements.txt:/app/test.requirements.txt \
+    -v $(pwd)/testresults:/app/testresults \
     -v $(pwd)/tests:/app/tests \
-	myapp -c "pip install -r test.requirements.txt && pytest --junitxml testresults/test-results.xml --cov site --cov-report=xml:testresults/coverage.xml --cov-report=html:testresults/coverage-report -v tests"
+    myapp -c "pip install -r test.requirements.txt \
+      && pytest --junitxml testresults/test-results.xml \
+      --cov site \
+      --cov-report=xml:testresults/coverage.xml \
+      --cov-report=html:testresults/coverage-report \
+      -v tests"
 ```
 
---
+---
 
-### Observations
+### 03 - Observations
 
 * Tests!
 * Test modules separate from publish container
@@ -162,9 +170,9 @@ docker run --rm -i \
 * No more volume mount points
 * Build cache easier to remove from publish
 
---
+---
 
-### Example Dockerfile - Part 1
+### 05 - Example Dockerfile - Part 1
 
 ```Dockerfile
 FROM python:3.6 as build
@@ -180,9 +188,9 @@ COPY --from=build /app/lib /app/lib
 ENTRYPOINT ["python", "site/app.py"]
 ```
 
---
+---
 
-### Example Dockerfile - Part 2
+### 05 - Example Dockerfile - Part 2
 
 ```Dockerfile
 FROM appbase as test
@@ -196,9 +204,9 @@ RUN chmod +x *.sh
 RUN run_tests.sh
 ```
 
---
+---
 
-### Example Dockerfile - Part 3
+### 05 - Example Dockerfile - Part 3
 
 ```Dockerfile
 FROM appbase as app
@@ -206,9 +214,9 @@ ENV PYTHONPATH "/app/site:/app/lib"
 COPY --from=test /app/testresults /app/testresults
 ```
 
---
+---
 
-### Observations
+### 05 - Observations
 
 * How to get test artifacts?! Argh!
 * Docker file is much more complex
@@ -223,9 +231,9 @@ COPY --from=test /app/testresults /app/testresults
 * Remote builds possible
 * Found a nice trick to get test artifacts
 
---
+---
 
-### Example Build/Publish Dockerfile
+### 06 - Example Build/Publish Dockerfile
 
 ```Dockerfile
 FROM python:3.6 as build
@@ -244,9 +252,9 @@ ENTRYPOINT ["python", "site/app.py"]
 FROM appbase as app
 ```
 
---
+---
 
-### Example Test Dockerfile
+### 06 - Example Test Dockerfile
 
 ```Dockerfile
 ARG IMGBASE
@@ -261,7 +269,7 @@ RUN pip install -r test.requirements.txt
 ENTRYPOINT ["/app/run_tests_docker.sh"]
 ```
 
---
+---
 
 ### run_tests_docker.sh
 
@@ -278,7 +286,7 @@ tar cf - "$TESTRESULTS" | cat
 exit $EXIT_CODE
 ```
 
---
+---
 
 ### run_tests_ci.sh
 
@@ -293,7 +301,7 @@ docker run --rm -i \
 exit $EXIT_CODE
 ```
 
---
+---
 
 ### Learning TTY
 
@@ -319,5 +327,11 @@ Note: this is when I ran into the difference between -i and -it. Basically, if y
 
 ## Related / References
 
-* https://github.com/jhgoodwin/azure-dev-ops-day-raleigh-2019
-* https://docs.microsoft.com/en-us/azure/container-registry/container-registry-tutorial-quick-task
+* [Docker Docs](https://docs.docker.com/)
+* [Katacoda](https://katacoda.com/)
+* [Dive docker image tool](https://github.com/wagoodman/dive)
+* [Workshop material for Triangle Devops 2020-03-11 Next Level Docker Builds](https://github.com/jhgoodwin/triangle-devops-2020-03-11)
+* [Containers from Scratch - Eric Chiang, CoreOS](https://www.youtube.com/watch?v=wyqoi52k5jM)
+* [Minimal Containers - Brian 'Red Beard'](https://github.com/brianredbeard/minimal_containers)
+* [Sysdig and CoreOS Meetup Jul '15: Best Practices For Container Environments](https://www.youtube.com/watch?v=gMpldbcMHuI)
+* [Marp CLI markdown slide converter](https://github.com/marp-team/marp-cli/)
