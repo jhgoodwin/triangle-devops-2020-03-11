@@ -28,10 +28,59 @@ Principal Software Engineer, Metabolon, Inc
 
 ## Agenda
 
+* Docker Build - what is it?
 * Ideas / Outcomes
 * Each revision
 * Distinct outcomes
 * Recommendation
+
+---
+
+## Docker Build - what is it?
+
+* Creates Images
+* Images are tar balls
+* Mostly run + commit
+
+---
+
+## Docker Build - what is it for?
+
+* Create image w/ your app's file(s) inside
+* Packaging strategy
+
+---
+
+## Container Images - tar balls
+
+```bash
+export TOKEN=\
+"$(curl \
+--silent \
+--header 'GET' \
+"https://auth.docker.io/token?service=registry.docker.io&scope=repository:library/ubuntu:pull" \
+| jq -r '.token' \
+)"
+
+curl \
+--silent \
+--request 'GET' \
+--header "Authorization: Bearer ${TOKEN}" \
+'https://registry-1.docker.io/v2/library/ubuntu/manifests/latest' \
+| jq -r '.fsLayers[].blobSum' > ubuntu-blobsums.txt
+
+while read BLOBSUM; do
+curl \
+--silent \
+--location \
+--request 'GET' \
+--header "Authorization: Bearer ${TOKEN}" \
+"https://registry-1.docker.io/v2/library/ubuntu/blobs/${BLOBSUM}" \
+> "${BLOBSUM/*:/}.gz"; \
+done < ubuntu-blobsums.txt
+```
+
+_credit_ : [stackexchange thread](https://devops.stackexchange.com/questions/2731/downloading-docker-images-from-docker-hub-without-using-docker)
 
 ---
 
