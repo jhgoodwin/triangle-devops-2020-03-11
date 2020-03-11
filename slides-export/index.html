@@ -23,34 +23,79 @@
 <p>Principal Software Engineer, Metabolon, Inc<br />
 <a href="https://metabolon.com/">https://metabolon.com/</a></p>
 </section>
-</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="3" data-marpit-fragments="4" data-class="invert" data-theme="default" class="invert" style="--class:invert;--theme:default;">
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="3" data-marpit-fragments="5" data-class="invert" data-theme="default" class="invert" style="--class:invert;--theme:default;">
 <h2>Agenda</h2>
 <ul>
-<li data-marpit-fragment="1">Ideas / Outcomes</li>
-<li data-marpit-fragment="2">Each revision</li>
-<li data-marpit-fragment="3">Distinct outcomes</li>
-<li data-marpit-fragment="4">Recommendation</li>
+<li data-marpit-fragment="1">Docker Build - what is it?</li>
+<li data-marpit-fragment="2">Ideas / Outcomes</li>
+<li data-marpit-fragment="3">Each revision</li>
+<li data-marpit-fragment="4">Distinct outcomes</li>
+<li data-marpit-fragment="5">Recommendation</li>
 </ul>
 </section>
-</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="4" data-class="invert" data-theme="default" class="invert" style="--class:invert;--theme:default;">
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="4" data-marpit-fragments="3" data-class="invert" data-theme="default" class="invert" style="--class:invert;--theme:default;">
+<h2>Docker Build - what is it?</h2>
+<ul>
+<li data-marpit-fragment="1">Creates Images</li>
+<li data-marpit-fragment="2">Images are tar balls</li>
+<li data-marpit-fragment="3">Mostly run + commit</li>
+</ul>
+</section>
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="5" data-marpit-fragments="2" data-class="invert" data-theme="default" class="invert" style="--class:invert;--theme:default;">
+<h2>Docker Build - what is it for?</h2>
+<ul>
+<li data-marpit-fragment="1">Create image w/ your app's file(s) inside</li>
+<li data-marpit-fragment="2">Packaging strategy</li>
+</ul>
+</section>
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="6" data-class="invert" data-theme="default" class="invert" style="--class:invert;--theme:default;">
+<h2>Container Images - tar balls</h2>
+<pre><code class="language-bash"><svg data-marp-fitting="svg" data-marp-fitting-code><foreignObject><span data-marp-fitting-svg-content><span data-marp-fitting-svg-content-wrap><span class="hljs-built_in">export</span> TOKEN=\
+<span class="hljs-string">"<span class="hljs-variable">$(curl \
+--silent \
+--header 'GET' \
+"https://auth.docker.io/token?service=registry.docker.io&amp;scope=repository:library/ubuntu:pull" \
+| jq -r '.token' \
+)</span>"</span>
+
+curl \
+--silent \
+--request <span class="hljs-string">'GET'</span> \
+--header <span class="hljs-string">"Authorization: Bearer <span class="hljs-variable">${TOKEN}</span>"</span> \
+<span class="hljs-string">'https://registry-1.docker.io/v2/library/ubuntu/manifests/latest'</span> \
+| jq -r <span class="hljs-string">'.fsLayers[].blobSum'</span> &gt; ubuntu-blobsums.txt
+
+<span class="hljs-keyword">while</span> <span class="hljs-built_in">read</span> BLOBSUM; <span class="hljs-keyword">do</span>
+curl \
+--silent \
+--location \
+--request <span class="hljs-string">'GET'</span> \
+--header <span class="hljs-string">"Authorization: Bearer <span class="hljs-variable">${TOKEN}</span>"</span> \
+<span class="hljs-string">"https://registry-1.docker.io/v2/library/ubuntu/blobs/<span class="hljs-variable">${BLOBSUM}</span>"</span> \
+&gt; <span class="hljs-string">"<span class="hljs-variable">${BLOBSUM/*:/}</span>.gz"</span>; \
+<span class="hljs-keyword">done</span> &lt; ubuntu-blobsums.txt
+</span></span></foreignObject></svg></code></pre>
+<p><em>credit</em> : <a href="https://devops.stackexchange.com/questions/2731/downloading-docker-images-from-docker-hub-without-using-docker">stackexchange thread</a></p>
+</section>
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="7" data-class="invert" data-theme="default" class="invert" style="--class:invert;--theme:default;">
 <h2>Context</h2>
 <p>node.js / python apps</p>
 <p>Note: C# tests have more nuances worth a different talk</p>
 </section>
-</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="5" data-marpit-fragments="2" data-class="invert" data-theme="default" class="invert" style="--class:invert;--theme:default;">
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="8" data-marpit-fragments="2" data-class="invert" data-theme="default" class="invert" style="--class:invert;--theme:default;">
 <h2>01 - Publish Dockerfile</h2>
 <ul>
 <li data-marpit-fragment="1">Build external to the Dockerfile</li>
 <li data-marpit-fragment="2">Copy files into Dockerfile only</li>
 </ul>
 </section>
-</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="6" data-class="invert" data-theme="default" class="invert" style="--class:invert;--theme:default;">
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="9" data-class="invert" data-theme="default" class="invert" style="--class:invert;--theme:default;">
 <h3>01 - Example Build</h3>
 <pre><code class="language-bash"><svg data-marp-fitting="svg" data-marp-fitting-code><foreignObject><span data-marp-fitting-svg-content><span data-marp-fitting-svg-content-wrap>pip install -r requirements.txt --target lib
 docker build -t myapp -f 01.Publish.Dockerfile .
 </span></span></foreignObject></svg></code></pre>
 </section>
-</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="7" data-class="invert" data-theme="default" class="invert" style="--class:invert;--theme:default;">
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="10" data-class="invert" data-theme="default" class="invert" style="--class:invert;--theme:default;">
 <h3>01 - Example Dockerfile</h3>
 <pre><code class="language-Dockerfile"><svg data-marp-fitting="svg" data-marp-fitting-code><foreignObject><span data-marp-fitting-svg-content><span data-marp-fitting-svg-content-wrap><span class="hljs-keyword">FROM</span> python:<span class="hljs-number">3.6</span>
 <span class="hljs-keyword">WORKDIR</span><span class="bash"> /app</span>
@@ -60,7 +105,7 @@ docker build -t myapp -f 01.Publish.Dockerfile .
 <span class="hljs-keyword">ENTRYPOINT</span><span class="bash"> [<span class="hljs-string">"python"</span>, <span class="hljs-string">"app.py"</span>]</span>
 </span></span></foreignObject></svg></code></pre>
 </section>
-</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="8" data-marpit-fragments="6" data-class="invert" data-theme="default" class="invert" style="--class:invert;--theme:default;">
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="11" data-marpit-fragments="6" data-class="invert" data-theme="default" class="invert" style="--class:invert;--theme:default;">
 <h3>01 - Observations</h3>
 <ul>
 <li data-marpit-fragment="1">Implicit build agent dependencies
@@ -74,19 +119,19 @@ docker build -t myapp -f 01.Publish.Dockerfile .
 <li data-marpit-fragment="6">No tests</li>
 </ul>
 </section>
-</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="9" data-marpit-fragments="2" data-class="invert" data-theme="default" class="invert" style="--class:invert;--theme:default;">
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="12" data-marpit-fragments="2" data-class="invert" data-theme="default" class="invert" style="--class:invert;--theme:default;">
 <h2>02 - Build / Publish Dockerfile</h2>
 <ul>
 <li data-marpit-fragment="1">Build/resolve packages inside Dockerfile</li>
 <li data-marpit-fragment="2">Ahead of Time vs Just in Time</li>
 </ul>
 </section>
-</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="10" data-class="invert" data-theme="default" class="invert" style="--class:invert;--theme:default;">
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="13" data-class="invert" data-theme="default" class="invert" style="--class:invert;--theme:default;">
 <h3>02 - Example Build</h3>
 <pre><code class="language-bash"><svg data-marp-fitting="svg" data-marp-fitting-code><foreignObject><span data-marp-fitting-svg-content><span data-marp-fitting-svg-content-wrap>docker build -t myapp -f 02.Build-Publish.Dockerfile .
 </span></span></foreignObject></svg></code></pre>
 </section>
-</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="11" data-class="invert" data-theme="default" class="invert" style="--class:invert;--theme:default;">
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="14" data-class="invert" data-theme="default" class="invert" style="--class:invert;--theme:default;">
 <h3>02 - Example Dockerfile</h3>
 <pre><code class="language-Dockerfile"><svg data-marp-fitting="svg" data-marp-fitting-code><foreignObject><span data-marp-fitting-svg-content><span data-marp-fitting-svg-content-wrap><span class="hljs-keyword">FROM</span> python:<span class="hljs-number">3.6</span>
 <span class="hljs-keyword">WORKDIR</span><span class="bash"> /app</span>
@@ -96,7 +141,7 @@ docker build -t myapp -f 01.Publish.Dockerfile .
 <span class="hljs-keyword">ENTRYPOINT</span><span class="bash"> [<span class="hljs-string">"python"</span>, <span class="hljs-string">"app.py"</span>]</span>
 </span></span></foreignObject></svg></code></pre>
 </section>
-</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="12" data-marpit-fragments="3" data-class="invert" data-theme="default" class="invert" style="--class:invert;--theme:default;">
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="15" data-marpit-fragments="3" data-class="invert" data-theme="default" class="invert" style="--class:invert;--theme:default;">
 <h3>02 - Observations</h3>
 <ul>
 <li data-marpit-fragment="1">Build environment now controlled</li>
@@ -104,14 +149,14 @@ docker build -t myapp -f 01.Publish.Dockerfile .
 <li data-marpit-fragment="3">No tests</li>
 </ul>
 </section>
-</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="13" data-marpit-fragments="2" data-class="invert" data-theme="default" class="invert" style="--class:invert;--theme:default;">
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="16" data-marpit-fragments="2" data-class="invert" data-theme="default" class="invert" style="--class:invert;--theme:default;">
 <h2>03 - Build / Publish Dockerfile, docker run tests</h2>
 <ul>
 <li data-marpit-fragment="1">Tests!</li>
 <li data-marpit-fragment="2">Access to test artifacts</li>
 </ul>
 </section>
-</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="14" data-class="invert" data-theme="default" class="invert" style="--class:invert;--theme:default;">
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="17" data-class="invert" data-theme="default" class="invert" style="--class:invert;--theme:default;">
 <h3>03 - Example Test Command</h3>
 <pre><code class="language-bash"><svg data-marp-fitting="svg" data-marp-fitting-code><foreignObject><span data-marp-fitting-svg-content><span data-marp-fitting-svg-content-wrap>mkdir -p testresults
 docker run --rm -i \
@@ -128,7 +173,7 @@ docker run --rm -i \
       -v tests"</span>
 </span></span></foreignObject></svg></code></pre>
 </section>
-</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="15" data-marpit-fragments="5" data-class="invert" data-theme="default" class="invert" style="--class:invert;--theme:default;">
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="18" data-marpit-fragments="5" data-class="invert" data-theme="default" class="invert" style="--class:invert;--theme:default;">
 <h3>03 - Observations</h3>
 <ul>
 <li data-marpit-fragment="1">Tests!</li>
@@ -138,14 +183,14 @@ docker run --rm -i \
 <li data-marpit-fragment="5">File permissions can get messed up</li>
 </ul>
 </section>
-</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="16" data-marpit-fragments="2" data-class="invert" data-theme="default" class="invert" style="--class:invert;--theme:default;">
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="19" data-marpit-fragments="2" data-class="invert" data-theme="default" class="invert" style="--class:invert;--theme:default;">
 <h2>04 - Build / Publish Dockerfile, Test docker-compose</h2>
 <ul>
 <li data-marpit-fragment="1">Removed for brevity</li>
 <li data-marpit-fragment="2">Similar to prior, but uses compose syntax</li>
 </ul>
 </section>
-</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="17" data-marpit-fragments="4" data-class="invert" data-theme="default" class="invert" style="--class:invert;--theme:default;">
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="20" data-marpit-fragments="4" data-class="invert" data-theme="default" class="invert" style="--class:invert;--theme:default;">
 <h2>05 - Build / Publish / test multi-stage Dockerfile</h2>
 <ul>
 <li data-marpit-fragment="1">Intermediate layer caching</li>
@@ -154,7 +199,7 @@ docker run --rm -i \
 <li data-marpit-fragment="4">Build cache easier to remove from publish</li>
 </ul>
 </section>
-</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="18" data-class="invert" data-theme="default" class="invert" style="--class:invert;--theme:default;">
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="21" data-class="invert" data-theme="default" class="invert" style="--class:invert;--theme:default;">
 <h3>05 - Example Dockerfile - Part 1</h3>
 <pre><code class="language-Dockerfile"><svg data-marp-fitting="svg" data-marp-fitting-code><foreignObject><span data-marp-fitting-svg-content><span data-marp-fitting-svg-content-wrap><span class="hljs-keyword">FROM</span> python:<span class="hljs-number">3.6</span> as build
 <span class="hljs-keyword">WORKDIR</span><span class="bash"> /app</span>
@@ -169,7 +214,7 @@ docker run --rm -i \
 <span class="hljs-keyword">ENTRYPOINT</span><span class="bash"> [<span class="hljs-string">"python"</span>, <span class="hljs-string">"site/app.py"</span>]</span>
 </span></span></foreignObject></svg></code></pre>
 </section>
-</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="19" data-class="invert" data-theme="default" class="invert" style="--class:invert;--theme:default;">
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="22" data-class="invert" data-theme="default" class="invert" style="--class:invert;--theme:default;">
 <h3>05 - Example Dockerfile - Part 2</h3>
 <pre><code class="language-Dockerfile"><svg data-marp-fitting="svg" data-marp-fitting-code><foreignObject><span data-marp-fitting-svg-content><span data-marp-fitting-svg-content-wrap><span class="hljs-keyword">FROM</span> appbase as test
 <span class="hljs-keyword">ENV</span> PYTHONPATH <span class="hljs-string">"/app/site:/app/lib"</span>
@@ -182,21 +227,21 @@ docker run --rm -i \
 <span class="hljs-keyword">RUN</span><span class="bash"> run_tests.sh</span>
 </span></span></foreignObject></svg></code></pre>
 </section>
-</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="20" data-class="invert" data-theme="default" class="invert" style="--class:invert;--theme:default;">
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="23" data-class="invert" data-theme="default" class="invert" style="--class:invert;--theme:default;">
 <h3>05 - Example Dockerfile - Part 3</h3>
 <pre><code class="language-Dockerfile"><svg data-marp-fitting="svg" data-marp-fitting-code><foreignObject><span data-marp-fitting-svg-content><span data-marp-fitting-svg-content-wrap><span class="hljs-keyword">FROM</span> appbase as app
 <span class="hljs-keyword">ENV</span> PYTHONPATH <span class="hljs-string">"/app/site:/app/lib"</span>
 <span class="hljs-keyword">COPY</span><span class="bash"> --from=<span class="hljs-built_in">test</span> /app/testresults /app/testresults</span>
 </span></span></foreignObject></svg></code></pre>
 </section>
-</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="21" data-marpit-fragments="2" data-class="invert" data-theme="default" class="invert" style="--class:invert;--theme:default;">
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="24" data-marpit-fragments="2" data-class="invert" data-theme="default" class="invert" style="--class:invert;--theme:default;">
 <h3>05 - Observations</h3>
 <ul>
 <li data-marpit-fragment="1">How to get test artifacts?! Argh!</li>
 <li data-marpit-fragment="2">Docker file is much more complex</li>
 </ul>
 </section>
-</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="22" data-marpit-fragments="5" data-class="invert" data-theme="default" class="invert" style="--class:invert;--theme:default;">
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="25" data-marpit-fragments="5" data-class="invert" data-theme="default" class="invert" style="--class:invert;--theme:default;">
 <h2>06 - Build / Publish Dockerfile + test Dockerfile</h2>
 <ul>
 <li data-marpit-fragment="1">Simpler build</li>
@@ -206,7 +251,7 @@ docker run --rm -i \
 <li data-marpit-fragment="5">Found a nice trick to get test artifacts</li>
 </ul>
 </section>
-</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="23" data-class="invert" data-theme="default" class="invert" style="--class:invert;--theme:default;">
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="26" data-class="invert" data-theme="default" class="invert" style="--class:invert;--theme:default;">
 <h3>06 - Example Build/Publish Dockerfile</h3>
 <pre><code class="language-Dockerfile"><svg data-marp-fitting="svg" data-marp-fitting-code><foreignObject><span data-marp-fitting-svg-content><span data-marp-fitting-svg-content-wrap><span class="hljs-keyword">FROM</span> python:<span class="hljs-number">3.6</span> as build
 <span class="hljs-keyword">WORKDIR</span><span class="bash"> /app</span>
@@ -224,7 +269,7 @@ docker run --rm -i \
 <span class="hljs-keyword">FROM</span> appbase as app
 </span></span></foreignObject></svg></code></pre>
 </section>
-</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="24" data-class="invert" data-theme="default" class="invert" style="--class:invert;--theme:default;">
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="27" data-class="invert" data-theme="default" class="invert" style="--class:invert;--theme:default;">
 <h3>06 - Example Test Dockerfile</h3>
 <pre><code class="language-Dockerfile"><svg data-marp-fitting="svg" data-marp-fitting-code><foreignObject><span data-marp-fitting-svg-content><span data-marp-fitting-svg-content-wrap><span class="hljs-keyword">ARG</span> IMGBASE
 <span class="hljs-keyword">FROM</span> ${IMGBASE}
@@ -238,7 +283,7 @@ docker run --rm -i \
 <span class="hljs-keyword">ENTRYPOINT</span><span class="bash"> [<span class="hljs-string">"/app/run_tests_docker.sh"</span>]</span>
 </span></span></foreignObject></svg></code></pre>
 </section>
-</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="25" data-class="invert" data-theme="default" class="invert" style="--class:invert;--theme:default;">
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="28" data-class="invert" data-theme="default" class="invert" style="--class:invert;--theme:default;">
 <h3>run_tests_docker.sh</h3>
 <pre><code class="language-bash"><svg data-marp-fitting="svg" data-marp-fitting-code><foreignObject><span data-marp-fitting-svg-content><span data-marp-fitting-svg-content-wrap><span class="hljs-meta">#!/usr/bin/env bash</span>
 <span class="hljs-comment"># folder for the test results</span>
@@ -252,7 +297,7 @@ tar cf - <span class="hljs-string">"<span class="hljs-variable">$TESTRESULTS</sp
 <span class="hljs-built_in">exit</span> <span class="hljs-variable">$EXIT_CODE</span>
 </span></span></foreignObject></svg></code></pre>
 </section>
-</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="26" data-class="invert" data-theme="default" class="invert" style="--class:invert;--theme:default;">
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="29" data-class="invert" data-theme="default" class="invert" style="--class:invert;--theme:default;">
 <h3>run_tests_ci.sh</h3>
 <pre><code class="language-bash"><svg data-marp-fitting="svg" data-marp-fitting-code><foreignObject><span data-marp-fitting-svg-content><span data-marp-fitting-svg-content-wrap><span class="hljs-meta">#!/usr/bin/env bash</span>
 : <span class="hljs-string">"<span class="hljs-variable">${TEST_IMAGE_NAME:?Name of test image to run}</span>"</span>
@@ -264,7 +309,7 @@ docker run --rm -i \
 <span class="hljs-built_in">exit</span> <span class="hljs-variable">$EXIT_CODE</span>
 </span></span></foreignObject></svg></code></pre>
 </section>
-</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="27" data-class="invert" data-theme="default" class="invert" style="--class:invert;--theme:default;">
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="30" data-class="invert" data-theme="default" class="invert" style="--class:invert;--theme:default;">
 <h3>Learning TTY</h3>
 <pre><code class="language-bash"><svg data-marp-fitting="svg" data-marp-fitting-code><foreignObject><span data-marp-fitting-svg-content><span data-marp-fitting-svg-content-wrap>docker run -it ...
 
@@ -274,7 +319,7 @@ docker run -i ...
 </span></span></foreignObject></svg></code></pre>
 <p>Note: this is when I ran into the difference between -i and -it. Basically, if you don't need the interactive terminal (like when running bash interactively), then leave off the t flag. Leaving it on can cause extra carriage return characters in your datastream. This will corrupt the output from tar</p>
 </section>
-</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="28" data-marpit-fragments="3" data-class="invert" data-theme="default" class="invert" style="--class:invert;--theme:default;">
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="31" data-marpit-fragments="3" data-class="invert" data-theme="default" class="invert" style="--class:invert;--theme:default;">
 <h2>Recommendation</h2>
 <ul>
 <li data-marpit-fragment="1">Single responsibility</li>
@@ -282,7 +327,7 @@ docker run -i ...
 <li data-marpit-fragment="3">Command Chain</li>
 </ul>
 </section>
-</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="29" data-marpit-fragments="8" data-class="invert" data-theme="default" class="invert" style="--class:invert;--theme:default;">
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="32" data-marpit-fragments="8" data-class="invert" data-theme="default" class="invert" style="--class:invert;--theme:default;">
 <h2>Related / References</h2>
 <ul>
 <li data-marpit-fragment="1"><a href="https://docs.docker.com/">Docker Docs</a></li>
